@@ -92,5 +92,8 @@ sudo /usr/local/bin/verify_traffic.sh
 - Keep secrets in `/etc/nordvpn-gateway.env` (MQTT user/pass, etc.).
 - Consider logrotate for `/var/log/nordvpn-gateway.log`.
 
+## Acknowledgments
+The project is written and maintained by @Howard0000. An AI assistant helped simplify explanations, tidy up the README, and polish scripts. All suggestions were manually reviewed before inclusion, and all configuration and testing were done by me.
+
 ## 📝 License
 MIT — see `LICENSE`.
