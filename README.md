@@ -85,5 +85,9 @@ sudo /usr/local/bin/verify_traffic.sh
 - `sudo iptables -t mangle -L PREROUTING -v -n` — øker tellerne for `tcp dpt:8080`?
 - `sudo tcpdump -i nordlynx -n 'tcp and port 8080'` — ser du pakker?
 
+## Anerkjennelser
+Prosjektet er skrevet og vedlikeholdt av @Howard0000. En KI-assistent har hjulpet til med å forenkle forklaringer, rydde i README-en og pusse på skript. Alle forslag er manuelt vurdert før de ble tatt inn, og all konfigurasjon og testing er gjort av meg.
+
+
 ## 📝 Lisens
 MIT — se `LICENSE`.
