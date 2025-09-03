@@ -6,7 +6,7 @@ Dette prosjektet setter opp en Raspberry Pi som en kombinert DNS-filtreringsserv
 
 ---
 
-## Mål
+## 🧭 Mål
 
 * Raspberry Pi med statisk IP-adresse.
 * Pi-hole for lokal DNS-blokkering på hele nettverket.
@@ -16,7 +16,7 @@ Dette prosjektet setter opp en Raspberry Pi som en kombinert DNS-filtreringsserv
 
 ---
 
-## Krav
+## 📦 Krav
 
 * Raspberry Pi 3, 4 eller 5 (kablet nettverk er sterkt anbefalt).
 * Raspberry Pi OS Lite (64-bit), Bookworm eller nyere.
@@ -25,7 +25,7 @@ Dette prosjektet setter opp en Raspberry Pi som en kombinert DNS-filtreringsserv
 
 ---
 
-## Steg-for-steg-oppsett
+## 🔧 Steg-for-steg-oppsett
 
 ### 0. Systemoppsett
 
@@ -234,13 +234,28 @@ PROTO="tcp"
 
 ---
 
-## Anerkjennelser
+## 💾 Backup og Vedlikehold
+
+* Ta backup av `/etc/iptables/rules.v4`, `nordvpn-gateway.sh`, og systemd-unit-filen.
+* Sett opp logrotate om du bruker fil-logging.
+
+---
+
+## 📡 MQTT og Home Assistant
+
+MQTT er **av** som standard (`MQTT_ENABLED=false`).
+Sett til `true` og fyll inn broker/bruker/passord i `nordvpn-gateway.sh` for å aktivere.
+
+Scriptet støtter Home Assistant discovery for status, last\_seen og CPU-temp-sensor.
+
+---
+
+## 🙌 Anerkjennelser
 
 Prosjektet er skrevet og vedlikeholdt av @Howard0000. En KI-assistent har hjulpet til med å forenkle forklaringer, rydde i README-en og pusse på skript. Alle forslag er manuelt vurdert før de ble tatt inn, og all konfigurasjon og testing er gjort av meg.
 
 ---
 
-## Lisens
+## 📝 Lisens
 
 MIT — se LICENSE.
-
