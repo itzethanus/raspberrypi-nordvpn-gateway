@@ -36,10 +36,10 @@ Prosjektet inkluderer robust oppstart, selvreparerende logikk og overvåkning vi
 1.  Installer Raspberry Pi OS Lite (64-bit).
 2.  Koble til via SSH.
 3.  Oppdater systemet:
-    
+
     sudo apt update && sudo apt full-upgrade -y
     sudo reboot
-    
+
 4.  **Sett statisk IP-adresse:**
     På nyere versjoner av Raspberry Pi OS brukes NetworkManager. **Tilpass IP-adresser til ditt eget nettverk.**
 
@@ -82,10 +82,10 @@ Installer den offisielle NordVPN-klienten:
 
 Gi din bruker tilgang til NordVPN og start på nytt:
 
-    sudo usmod -aG nordvpn $USER
+    sudo usermod -aG nordvpn $USER
     sudo reboot
 
-Etter omstart, logg inn og konfigurer klienten. Vi deaktiverer alle funksjoner som kan forstyrre vår manuelle ruting:
+Etter omstart, logg inn og konfigurer klienten. Deaktiver alle funksjoner som kan forstyrre den manuelle rutingen:
     
     nordvpn login
     nordvpn set killswitch disabled
@@ -148,9 +148,7 @@ Disse `iptables`-reglene setter opp en sikker brannmur og implementerer den sele
 
 ### 6. Opprett hovedskriptet `nordvpn-gateway.sh`
 
-I stedet for å lime inn skriptet her, kan brukere nå laste det ned direkte fra repositoriet.
-
-    # Last ned skriptet fra GitHub (husk å endre brukernavn/repo hvis nødvendig)
+    # Last ned hovedskriptet fra GitHub
     sudo wget -O /usr/local/bin/nordvpn-gateway.sh https://raw.githubusercontent.com/Howard0000/raspberrypi-nordvpn-gateway/main/nordvpn-gateway.sh
 
     # Gjør det kjørbart
@@ -228,8 +226,7 @@ Bruk disse kommandoene for å sjekke at alt fungerer:
 
 ### Verifiseringsskript
 
-For å få et endelig bevis på at den selektive rutingen fungerer, last ned og kjør `verify_traffic.sh` fra dette repositoriet.
-
+    # Last ned verifiseringsskriptet fra GitHub
     wget https://raw.githubusercontent.com/Howard0000/raspberrypi-nordvpn-gateway/main/verify_traffic.sh
     chmod +x verify_traffic.sh
     sudo ./verify_traffic.sh
