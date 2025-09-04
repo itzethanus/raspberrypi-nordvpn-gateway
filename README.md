@@ -181,7 +181,11 @@ sudo nano /usr/local/bin/nordvpn-gateway.sh
 
 ```bash
 sudo nano /etc/systemd/system/nordvpn-gateway.service
+```
 
+Lim inn innholdet under:
+
+```ini
 [Unit]
 Description=NordVPN Gateway Service
 After=network-online.target nordvpnd.service
@@ -204,18 +208,15 @@ RestartSec=15
 
 [Install]
 WantedBy=multi-user.target
+```
 
+Aktiver tjenesten:
+
+```bash
 sudo systemctl daemon-reload
 sudo systemctl enable nordvpn-gateway.service
 sudo systemctl start nordvpn-gateway.service
-
-
-
-### 8. Konfigurer ruteren
-
-* Sett **Default Gateway** til Raspberry Pi (eks. `192.168.1.102`).
-* Sett **DNS-server** til samme adresse.
-* Start klientene på nytt.
+```
 
 ---
 
