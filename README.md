@@ -185,6 +185,29 @@ sudo nano /etc/systemd/system/nordvpn-gateway.service
 
 Lim inn unit, og aktiver:
 
+[Unit]
+Description=NordVPN Gateway Service
+After=network-online.target nordvpnd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Environment=LANG=C LC_ALL=C
+ExecStart=/usr/local/bin/nordvpn-gateway.sh
+Restart=always
+RestartSec=15
+# (Valgfri herding – test i ditt miljø først)
+# CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW
+# AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+# NoNewPrivileges=yes
+# ProtectSystem=full
+# ProtectHome=true
+# PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable nordvpn-gateway.service
