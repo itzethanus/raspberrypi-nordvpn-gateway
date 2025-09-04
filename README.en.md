@@ -25,6 +25,13 @@ This project sets up a Raspberry Pi as a combined DNS filtering server (Pi-hole)
 
 ---
 
+## ⚠️ Important before you start
+- **IPv6**: The setup is IPv4-based. If IPv6 is enabled in your network, traffic may bypass the VPN. Either disable IPv6 on the Pi/clients, or add equivalent IPv6 rules.  
+- **CORRECT_GATEWAY**: In `nordvpn-gateway.sh`, set the variable `CORRECT_GATEWAY` to the IP of your router (e.g. `192.168.1.1`).  
+- **CPU-temp**: Publishing CPU temperature to MQTT is **disabled by default** (`ENABLE_CPU_TEMP=false`). Enable it if you want to use it.
+
+---
+
 ## 🔧 Step-by-step setup
 
 ### 0. System setup
