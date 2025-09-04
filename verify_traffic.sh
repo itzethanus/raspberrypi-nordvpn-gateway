@@ -2,19 +2,9 @@
 # ==============================================================================
 # verify_traffic.sh — Verifiser selektiv ruting via NordVPN (nordlynx)
 # ==============================================================================
-# Hva den gjør:
-#  1) Viser relevante iptables-regler (mangle/FW-mark) for valgt PROTO/PORT
-#  2) Viser ip-rule og rutingtabell brukt for MARK 0x1
-#  3) Lytter på VPN-grensesnittet med tcpdump for valgt PROTO/PORT i en periode
-#
-# Hvordan bruke:
-#  - Kjør fra Pi-en (som gateway): sudo ./verify_traffic.sh
-#  - Generér trafikk fra en klient-IP som er med i MANGLE-reglene (f.eks. gå til
-#    http://example.com:8080 eller bruk en app/tjeneste på porten du tester).
-#
-# TIPS:
-#  - Endre variablene under for å teste andre porter/protokoller/grensesnitt.
-#  - For UDP (f.eks. WireGuard/WG): sett PROTO=udp og PORT=51820
+#  1) Viser relevante iptables-regler (mangle/FW-mark) for PROTO/PORT
+#  2) Viser ip-rule og rutetabell for MARK 0x1
+#  3) Lytter på VPN-grensesnittet med tcpdump for valgt PROTO/PORT
 # ==============================================================================
 
 set -euo pipefail
@@ -26,13 +16,12 @@ PROTO="tcp"        # "tcp" eller "udp"
 DURATION=20        # Hvor lenge tcpdump skal lytte (sekunder)
 
 # --- Interne innstillinger -----------------------------------------------------
-MARK_HEX="0x1"     # Vi bruker MARK 1 i oppskriftene (endre hvis du bruker en annen)
-RT_TABLE_CANDIDATES=("nordvpntabell" "nordvpntable" "vpn_table")  # støtt begge språk/varianter
+MARK_HEX="0x1"     # vi bruker MARK 1 i oppskriftene
+RT_TABLE_CANDIDATES=("nordvpntabell" "nordvpntable" "vpn_table")
 
-# --- Funksjoner ----------------------------------------------------------------
 need_root() {
   if [[ $EUID -ne 0 ]]; then
-    echo "Denne skriptet må kjøres som root. Prøv: sudo $0" >&2
+    echo "Dette skriptet må kjøres som root. Prøv: sudo $0" >&2
     exit 1
   fi
 }
@@ -52,11 +41,9 @@ check_deps() {
 detect_rt_table() {
   for name in "${RT_TABLE_CANDIDATES[@]}"; do
     if grep -Eq "[[:space:]]${name}\$" /etc/iproute2/rt_tables 2>/dev/null; then
-      echo "$name"
-      return 0
+      echo "$name"; return 0
     fi
   done
-  # Fallback (kan fortsatt eksistere selv om ikke registrert i rt_tables)
   echo "${RT_TABLE_CANDIDATES[0]}"
 }
 
@@ -94,7 +81,6 @@ run_tcpdump() {
   echo "     (Generer trafikk fra en klient som er merket i MANGLE-reglene nå.)"
   echo
 
-  # Velg riktig filter-uttrykk
   local filter
   if [[ "$PROTO" == "tcp" ]]; then
     filter="tcp port $PORT"
@@ -105,8 +91,6 @@ run_tcpdump() {
     exit 1
   fi
 
-  # -n: ikke DNS-oppslag, -i: interface, -vv: litt mer detalj
-  # Bruk timeout for å stoppe automatisk
   timeout "${DURATION}" tcpdump -ni "$IFACE" -vv "$filter" || true
 
   echo
