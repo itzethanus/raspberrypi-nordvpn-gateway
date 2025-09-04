@@ -181,9 +181,6 @@ sudo nano /usr/local/bin/nordvpn-gateway.sh
 
 ```bash
 sudo nano /etc/systemd/system/nordvpn-gateway.service
-```
-
-Lim inn unit, og aktiver:
 
 [Unit]
 Description=NordVPN Gateway Service
@@ -209,11 +206,9 @@ RestartSec=15
 WantedBy=multi-user.target
 
 
-```bash
 sudo systemctl daemon-reload
 sudo systemctl enable nordvpn-gateway.service
 sudo systemctl start nordvpn-gateway.service
-```
 
 ---
 
