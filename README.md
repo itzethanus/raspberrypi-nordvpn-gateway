@@ -220,6 +220,14 @@ sudo systemctl start nordvpn-gateway.service
 
 ---
 
+### 8. Konfigurer ruteren
+
+- Sett **Default Gateway** til Raspberry Pi (eks. `192.168.1.102`).
+- Sett **DNS-server** til samme adresse.
+- Start klientene på nytt.
+
+---
+
 ### 9. Testing og verifisering
 
 ```bash
