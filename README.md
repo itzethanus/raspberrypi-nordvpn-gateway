@@ -25,6 +25,13 @@ Dette prosjektet setter opp en Raspberry Pi som en kombinert DNS-filtreringsserv
 
 ---
 
+## ⚠️ Viktig før du starter
+- **IPv6**: Oppsettet er IPv4-basert. Hvis du har IPv6 aktivt i nettverket ditt, kan trafikk lekke utenom VPN. Slå av IPv6 på Pi og klientene dine, eller legg til tilsvarende IPv6-regler.  
+- **CORRECT_GATEWAY**: I `nordvpn-gateway.sh` må du sette variabelen `CORRECT_GATEWAY` til IP-adressen til din egen ruter (f.eks. `192.168.1.1`).  
+- **CPU-temp**: Publisering av CPU-temperatur til MQTT er **av som standard** (`ENABLE_CPU_TEMP=false`). Skru på om du vil bruke den.
+
+---
+
 ## 🔧 Steg-for-steg-oppsett
 
 ### 0. Systemoppsett
