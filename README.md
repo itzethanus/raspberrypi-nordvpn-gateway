@@ -205,12 +205,11 @@ RestartSec=15
 [Install]
 WantedBy=multi-user.target
 
-
 sudo systemctl daemon-reload
 sudo systemctl enable nordvpn-gateway.service
 sudo systemctl start nordvpn-gateway.service
 
----
+
 
 ### 8. Konfigurer ruteren
 
