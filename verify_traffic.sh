@@ -1,68 +1,126 @@
 #!/bin/bash
+# ==============================================================================
+# verify_traffic.sh — Verifiser selektiv ruting via NordVPN (nordlynx)
+# ==============================================================================
+# Hva den gjør:
+#  1) Viser relevante iptables-regler (mangle/FW-mark) for valgt PROTO/PORT
+#  2) Viser ip-rule og rutingtabell brukt for MARK 0x1
+#  3) Lytter på VPN-grensesnittet med tcpdump for valgt PROTO/PORT i en periode
+#
+# Hvordan bruke:
+#  - Kjør fra Pi-en (som gateway): sudo ./verify_traffic.sh
+#  - Generér trafikk fra en klient-IP som er med i MANGLE-reglene (f.eks. gå til
+#    http://example.com:8080 eller bruk en app/tjeneste på porten du tester).
+#
+# TIPS:
+#  - Endre variablene under for å teste andre porter/protokoller/grensesnitt.
+#  - For UDP (f.eks. WireGuard/WG): sett PROTO=udp og PORT=51820
+# ==============================================================================
 
-# ANSI Fargekoder for penere output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+set -euo pipefail
 
-clear
-echo -e "${CYAN}--- Verifiseringsscript for selektiv VPN-ruting ---${NC}"
-echo
+# --- Konfigurasjon (TILPASS) --------------------------------------------------
+PORT=8080          # Porten du har merket i MANGLE for å gå via VPN
+IFACE="nordlynx"   # VPN-grensesnittet (NordVPN NordLynx)
+PROTO="tcp"        # "tcp" eller "udp"
+DURATION=20        # Hvor lenge tcpdump skal lytte (sekunder)
 
-# --- SJEKK 1: IPTABLES-TELLERE ---
-echo -e "${YELLOW}STEG 1: Sjekker om brannmurregelen for port 8080 blir truffet...${NC}"
+# --- Interne innstillinger -----------------------------------------------------
+MARK_HEX="0x1"     # Vi bruker MARK 1 i oppskriftene (endre hvis du bruker en annen)
+RT_TABLE_CANDIDATES=("nordvpntabell" "nordvpntable" "vpn_table")  # støtt begge språk/varianter
 
-PACKET_COUNT=$(sudo iptables -t mangle -L PREROUTING -v -n | grep 'tcp dpt:8080' | awk '{print $1}')
-
-if [[ -z "$PACKET_COUNT" ]]; then
-  echo "FEIL: Fant ingen iptables-regel for TCP port 8080 i mangle-tabellen."
-  echo "Dette er uventet. Sjekk at iptables-oppsettet ble lagret riktig."
-  exit 1
-fi
-
-echo "Fant følgende regel(er) som matcher port 8080:"
-# Viser regelen(e) med farger for lesbarhet
-sudo iptables -t mangle -L PREROUTING -v -n --line-numbers | grep --color=always '8080'
-echo
-echo -e "Nåværende pakketeller (pkts): ${GREEN}${PACKET_COUNT}${NC}"
-echo "Dette tallet viser hvor mange pakker som hittil er blitt merket for VPN."
-echo "Hvis tallet er større enn 0, er det et godt tegn!"
-echo
-read -p "Trykk [Enter] for å starte live-analysen av VPN-trafikken..."
-
-# --- SJEKK 2: LIVE TRAFIKK-ANALYSE ---
-echo
-echo -e "${CYAN}--------------------------------------------------------------${NC}"
-echo -e "${YELLOW}STEG 2: Lytter på live trafikk på vei UT av VPN-tunnelen...${NC}"
-echo
-
-if ! command -v tcpdump &> /dev/null; then
-    echo "FEIL: 'tcpdump' er ikke installert. Installer det med:"
-    echo "sudo apt update && sudo apt install tcpdump"
+# --- Funksjoner ----------------------------------------------------------------
+need_root() {
+  if [[ $EUID -ne 0 ]]; then
+    echo "Denne skriptet må kjøres som root. Prøv: sudo $0" >&2
     exit 1
-fi
+  fi
+}
 
-if ! ip addr show nordlynx &> /dev/null; then
-    echo "FEIL: VPN-grensesnittet 'nordlynx' er nede. Sjekk at VPN er tilkoblet."
-    echo "Kjør: systemctl status nordvpn-gateway.service"
+check_deps() {
+  local missing=()
+  for bin in iptables ip rule ip route tcpdump timeout grep awk sed; do
+    command -v "$bin" >/dev/null 2>&1 || missing+=("$bin")
+  done
+  if (( ${#missing[@]} )); then
+    echo "Mangler verktøy: ${missing[*]}" >&2
+    echo "Installer f.eks.: sudo apt update && sudo apt install tcpdump -y" >&2
     exit 1
-fi
+  fi
+}
 
-echo -e "Jeg vil nå lytte på grensesnittet ${GREEN}nordlynx${NC} etter trafikk til port 8080."
-echo -e "All trafikk du ser her, går garantert gjennom VPN-tunnelen."
-echo
-echo -e "${YELLOW}*** DIN OPPGAVE NÅ: ***${NC}"
-echo "1. Gå til en av dine VPN-klienter (f.eks. 192.168.1.128)."
-echo "2. Start appen eller tjenesten som bruker port 8080."
-echo "3. Se på dette terminalvinduet. Hvis alt virker, skal du se linjer med tekst dukke opp."
-echo
-echo -e "Trykk ${CYAN}Ctrl+C${NC} for å stoppe lyttingen når du er fornøyd."
-echo -e "${CYAN}--------------------------------------------------------------${NC}"
-sleep 2
+detect_rt_table() {
+  for name in "${RT_TABLE_CANDIDATES[@]}"; do
+    if grep -Eq "[[:space:]]${name}\$" /etc/iproute2/rt_tables 2>/dev/null; then
+      echo "$name"
+      return 0
+    fi
+  done
+  # Fallback (kan fortsatt eksistere selv om ikke registrert i rt_tables)
+  echo "${RT_TABLE_CANDIDATES[0]}"
+}
 
-# Lytter på nordlynx-grensesnittet for TCP-trafikk på port 8080
-sudo tcpdump -i nordlynx -n 'tcp and port 8080'
+print_header() {
+  echo "=============================================================================="
+  echo " Verifisering av selektiv ruting via VPN"
+  echo "  - IFACE : $IFACE"
+  echo "  - PROTO : $PROTO"
+  echo "  - PORT  : $PORT"
+  echo "  - LYTT  : ${DURATION}s med tcpdump"
+  echo "=============================================================================="
+}
+
+show_rules() {
+  echo
+  echo "[1/3] Søker etter MANGLE-regler som merker ${PROTO^^} trafikk til port $PORT med MARK $MARK_HEX ..."
+  iptables -t mangle -S PREROUTING | grep -iE "\-p[[:space:]]+$PROTO" | grep -iE "--dport[[:space:]]+$PORT" | grep -iE "MARK --set-mark[[:space:]]+1|MARK --set-mark[[:space:]]+$MARK_HEX" || {
+    echo "⚠️  Fant ingen matchende mangle-regel for $PROTO/$PORT som setter MARK 1." >&2
+  }
+
+  echo
+  echo "[2/3] Viser ip-rule som sender MARK $MARK_HEX til egen rutetabell ..."
+  ip rule show | grep -i "fwmark 0x1" || echo "⚠️  Fant ingen 'ip rule' for fwmark 0x1."
+
+  local rt_table
+  rt_table="$(detect_rt_table)"
+  echo
+  echo "[2b/3] Viser rutingtabell '${rt_table}' ..."
+  ip route show table "$rt_table" || echo "⚠️  Fant ingen ruter i tabellen '$rt_table'."
+}
+
+run_tcpdump() {
+  echo
+  echo "[3/3] Starter tcpdump på $IFACE for $PROTO port $PORT i ${DURATION}s ..."
+  echo "     (Generer trafikk fra en klient som er merket i MANGLE-reglene nå.)"
+  echo
+
+  # Velg riktig filter-uttrykk
+  local filter
+  if [[ "$PROTO" == "tcp" ]]; then
+    filter="tcp port $PORT"
+  elif [[ "$PROTO" == "udp" ]]; then
+    filter="udp port $PORT"
+  else
+    echo "Ukjent PROTO: $PROTO (må være 'tcp' eller 'udp')" >&2
+    exit 1
+  fi
+
+  # -n: ikke DNS-oppslag, -i: interface, -vv: litt mer detalj
+  # Bruk timeout for å stoppe automatisk
+  timeout "${DURATION}" tcpdump -ni "$IFACE" -vv "$filter" || true
+
+  echo
+  echo "Tips:"
+  echo "  - Hvis du ikke så pakker: dobbeltsjekk at klient-IP er merket i MANGLE,"
+  echo "    at du faktisk genererte $PROTO-trafikk til port $PORT, og at $IFACE er riktig."
+}
+
+# --- Kjør ----------------------------------------------------------------------
+need_root
+check_deps
+print_header
+show_rules
+run_tcpdump
 
 echo
-echo -e "${GREEN}Verifisering fullført.${NC}"
+echo "Ferdig. Hvis du så pakker på $IFACE for $PROTO/$PORT, fungerer selektiv ruting via VPN."
