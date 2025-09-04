@@ -183,8 +183,9 @@ sudo nano /usr/local/bin/nordvpn-gateway.sh
 sudo nano /etc/systemd/system/nordvpn-gateway.service
 ```
 
-Paste unit file and enable:
+Paste in the following content:
 
+```ini
 [Unit]
 Description=NordVPN Gateway Service
 After=network-online.target nordvpnd.service
@@ -197,7 +198,7 @@ Environment=LANG=C LC_ALL=C
 ExecStart=/usr/local/bin/nordvpn-gateway.sh
 Restart=always
 RestartSec=15
-# (Valgfri herding – test i ditt miljø først)
+# (Optional hardening – test in your environment first)
 # CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW
 # AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
 # NoNewPrivileges=yes
@@ -207,7 +208,9 @@ RestartSec=15
 
 [Install]
 WantedBy=multi-user.target
+```
 
+Enable the service:
 
 ```bash
 sudo systemctl daemon-reload
