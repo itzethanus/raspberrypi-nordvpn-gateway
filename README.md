@@ -208,6 +208,7 @@ RestartSec=15
 [Install]
 WantedBy=multi-user.target
 
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable nordvpn-gateway.service
